@@ -17,6 +17,7 @@
   },
   "homepage": "https://github.com/erogaki-dev/erogaki-discord#readme",
   "dependencies": {
-    "discord.js": "^12.5.3"
+    "discord.js": "^12.5.3",
+    "redis": "^3.1.1"
   }
 }
