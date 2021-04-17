@@ -1,0 +1,35 @@
+name: Create Release
+
+on:
+  push:
+    tags:
+      - v*
+
+jobs:
+  create-log:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v2
+        with:
+          fetch-depth: 0
+
+      - name: Create list of commits
+        run: |
+          previous_tag=$( git tag --sort=-creatordate | sed -n 2p )
+          if [ "$previous_tag" = "" ]; then
+            git log --pretty='- %s (%h)' > ./commit_list
+          else
+            git log --pretty='- %s (%h)' $previous_tag..${{ github.ref }} > ./commit_list
+          fi
+
+      - name: Create release
+        uses: actions/create-release@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          tag_name: ${{ github.ref }}
+          release_name: Release ${{ github.ref }}
+          body_path: ./commit_list
+          draft: false
+          prerelease: false
