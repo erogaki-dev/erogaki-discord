@@ -1,3 +1,4 @@
+#!/usr/bin/env node
 "use strict";
 
 const https = require("https");
@@ -35,7 +36,7 @@ discordClient.on("message", async msg => {
 
     // Return, if message doesn't start with a "!decensor manual bar"
     if (!msg.content.startsWith("!decensor")) return;
-    
+
     if (msg.content.startsWith("!decensor manual bar")) {
         await decensorRequestHandler(msg, "deepcreampy:bar");
     }
