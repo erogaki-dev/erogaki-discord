@@ -55,7 +55,7 @@ async function dcpBarDecensorRequestHandler(msg) {
                 reject(new Error("Censored image couldn't be downloaded."));
             });
 
-            let data = []
+            let data = [];
             res.on("data", (chunk) => {
                 data.push(chunk);
             });
@@ -73,7 +73,7 @@ async function dcpBarDecensorRequestHandler(msg) {
     await redisClient.set(`censored-images:${imageUUID}`, censoredImage);
 
     // Subscribe to keyevents, so we know when the image decensor request was processed.
-    const responseChannelPromise = new Promise((resolve, reject) => {
+    const responseChannelPromise = new Promise((resolve) => {
         const redisKeyeventListener = async (channel, message) => {
             if(message === `errors:${imageUUID}` || message === `decensored-images:${imageUUID}`) {
                 redisSubscribeClient.removeListener("message", redisKeyeventListener);

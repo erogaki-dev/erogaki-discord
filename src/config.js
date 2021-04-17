@@ -1,4 +1,4 @@
-"use strict"
+"use strict";
 
 /**
  * @typedef {Object} RedisConfig
@@ -44,7 +44,7 @@ function createConfig() {
  */
 function checkConfig(config) {
     if (config.discordConfig.accessToken === undefined) {
-        throw new Error("You need to provide a Discord token via the DISCORD_TOKEN environment variable.")
+        throw new Error("You need to provide a Discord token via the DISCORD_TOKEN environment variable.");
     }
 }
 

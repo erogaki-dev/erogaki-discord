@@ -15,4 +15,4 @@ module.exports = exports = class RedisPromisifiedClient {
         this.del = promisify(this.originalClient.del).bind(this.originalClient);
         this.rpush = promisify(this.originalClient.rpush).bind(this.originalClient);
     }
-}
+};
