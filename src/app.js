@@ -34,22 +34,30 @@ discordClient.on("message", async msg => {
     if (msg.attachments.filter(attachment => attachment.height !== null && attachment.width !== null) < 1) return;
 
     // Return, if message doesn't start with a "!decensor manual bar"
-    if (!msg.content.startsWith("!decensor manual bar")) return;
-
-    await dcpBarDecensorRequestHandler(msg);
-
+    if (!msg.content.startsWith("!decensor")) return;
+    
+    if (msg.content.startsWith("!decensor manual bar")) {
+        await decensorRequestHandler(msg, "deepcreampy:bar");
+    }
+    else if (msg.content.startsWith("!decensor bar")) {
+        await decensorRequestHandler(msg, "hent-ai:bar");
+    }
 });
 
 /**
  * @param {Discord.Message} msg
+ * @param {string} censoredImagesKey
  */
-async function dcpBarDecensorRequestHandler(msg) {
+async function decensorRequestHandler(msg, censoredImagesKey) {
+    console.log(`New image to decensor received from user ${msg.author.tag} in channel ${msg.channel.name} on server ${msg.guild.name}.`);
+
     // Start typing to indicate that the decensor request was received.
     msg.channel.startTyping();
 
     // Get the attached image.
     const imageUrl = msg.attachments.filter(attachment => attachment.height !== null && attachment.width !== null).first().url;
     const censoredImage = await new Promise((resolve, reject) => {
+        console.log("Downloading image from Discord.");
         https.get(imageUrl, (res) => {
             res.on("error", () => {
                 reject(new Error("Censored image couldn't be downloaded."));
@@ -70,6 +78,7 @@ async function dcpBarDecensorRequestHandler(msg) {
     const imageUUID = uuid.v4();
 
     // Put the image into Redis.
+    console.log(`Pushing image into censored-images:${imageUUID}.`);
     await redisClient.set(`censored-images:${imageUUID}`, censoredImage);
 
     // Subscribe to keyevents, so we know when the image decensor request was processed.
@@ -89,11 +98,11 @@ async function dcpBarDecensorRequestHandler(msg) {
     });
 
     // Add the image uuid to the decensor request queue.
-    await redisClient.rpush("censored-images:deepcreampy:bar", imageUUID);
+    await redisClient.rpush(`censored-images:${censoredImagesKey}`, imageUUID);
 
     // Await answer for decensor request.
     const responseChannel = await responseChannelPromise;
-    console.log(responseChannel);
+    console.log(`Received answer on channel ${responseChannel}.`);
 
     // Handle the error case.
     if (responseChannel === "errors") {
@@ -107,12 +116,15 @@ async function dcpBarDecensorRequestHandler(msg) {
     }
 
     // Get the decensored image from Redis.
+    console.log("Retrieving image from Redis.");
     const decensoredImage = await redisClient.get(Buffer.from(`decensored-images:${imageUUID}`));
 
     // Delete the decensored image.
+    console.log("Deleting image from Redis.");
     redisClient.del(`decensored-images:${imageUUID}`);
 
     // Send the decensored image into Discord.
+    console.log("Sending the decensored image into Discord channel.");
     const messageAttachment = new Discord.MessageAttachment(decensoredImage);
     msg.channel.send(messageAttachment);
     msg.channel.stopTyping();
