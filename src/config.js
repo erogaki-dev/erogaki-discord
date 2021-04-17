@@ -26,7 +26,7 @@
 function createConfig() {
     return {
         redisConfig: {
-            hostname: process.env.REDIS_HOSTNAME || "localhost",
+            host: process.env.REDIS_HOSTNAME || "localhost",
             port: parseInt(process.env.REDIS_PORT) || 6379,
             db: process.env.REDIS_DB || 0,
         },
