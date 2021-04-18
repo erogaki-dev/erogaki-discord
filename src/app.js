@@ -28,7 +28,7 @@ discordClient.on("ready", () => {
 
 discordClient.on("message", async message => {
     // Return, if message was sent by a bot.
-    if (message.channel.bot) return;
+    if (message.author.bot) return;
 
     // Return, if message doesn't start with "!".
     if (!message.content.startsWith("!")) return;
