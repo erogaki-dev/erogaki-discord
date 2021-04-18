@@ -92,15 +92,14 @@ async function help(message, args) {
  * @param {Discord.Message} message
  */
 async function _sendHelpOutput(message) {
-    let answer = [ ];
-    answer.push(`Help for erogaki-discord ${version}`);
+    const answerEmbed = new Discord.MessageEmbed()
+        .setTitle(`Help for erogaki-discord ${version}`)
+        .setDescription("The following commands are available:")
+        .setFooter("Just type !help <command> to receive help output for a command.");
 
-    answer.push("The following commands are availabe:");
     for (const command of discordClient.commands) {
-        answer.push(`- ${command[0]}`);
+        answerEmbed.addField(`!${command[1].name}`, command[1].description);
     }
 
-    answer.push("Just type !help <command> to receive help output for a command.");
-
-    await message.channel.send(answer);
+    await message.channel.send(answerEmbed);
 }

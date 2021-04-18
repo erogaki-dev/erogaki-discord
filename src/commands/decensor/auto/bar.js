@@ -1,5 +1,7 @@
 "use strict";
 
+const Discord = require("discord.js");
+
 const { decensorRequestHandler } = require("../../../backendInteraction");
 
 const name = "bar";
@@ -17,10 +19,11 @@ async function help(message) {
     // Construct command this help is about.
     const command = message.content.slice("!".length).trim().split(/ +/).slice(1).join(" ");
 
-    let answer = [ ];
-    answer.push(`Help for ${command}`);
-    answer.push(`${name}: ${description}`);
-    await message.channel.send(answer);
+    const answerEmbed = new Discord.MessageEmbed()
+        .setTitle(`Help for !${command}`)
+        .setDescription(`**${name}**: ${description}`);
+
+    await message.channel.send(answerEmbed);
 }
 
 exports.name = name;

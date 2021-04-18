@@ -116,15 +116,18 @@ module.exports = exports = class MainCommand {
         // Construct command this help is about.
         const command = message.content.slice("!".length).trim().split(/ +/).slice(1).join(" ");
 
-        let answer = [ ];
-        answer.push(`Help for ${command}`);
-        answer.push(`${this._name}: ${this._description}`);
+        const answerEmbed = new Discord.MessageEmbed()
+            .setTitle(`Help for !${command}`)
+            .setDescription(`**${this._name}**: ${this._description}`
+                            + "\n"
+                            + "\nThe following sub-commands are available:")
+            .setFooter("You can call sub-commands like the following:"
+                       + `\n!${command} <sub-command>`);
 
-        answer.push("The following sub-commands are available:");
         for (const subCommand of this._subCommands) {
-            answer.push(`- ${subCommand[0]}`);
+            answerEmbed.addField(`${subCommand[1].name}`, `${subCommand[1].description}`);
         }
 
-        await message.channel.send(answer);
+        await message.channel.send(answerEmbed);
     }
 };
