@@ -1,13 +1,24 @@
 #!/usr/bin/env node
 "use strict";
 
+const fs = require("fs");
 const Discord = require("discord.js");
 
 const { version } = require("../package.json");
 const config = require("./config");
-const { decensorRequestHandler } = require("./backendInteraction");
 
 const discordClient = new Discord.Client();
+discordClient.commands = new Discord.Collection();
+
+const commandFiles = fs.readdirSync(`${__dirname}/commands`).filter(file => file.endsWith(".js"));
+
+// Set commands.
+for (const file of commandFiles) {
+    const command = require(`./commands/${file}`);
+
+    discordClient.commands.set(command.name, command);
+}
+
 discordClient.login(config.token);
 
 discordClient.on("ready", () => {
@@ -15,23 +26,26 @@ discordClient.on("ready", () => {
     discordClient.user.setActivity(`Bot Version ${version}`);
 });
 
-discordClient.on("message", async msg => {
-    // Return, if message was sent in a non-nsfw channel.
-    if (!msg.channel.nsfw) return;
-
+discordClient.on("message", async message => {
     // Return, if message was sent by a bot.
-    if (msg.channel.bot) return;
+    if (message.channel.bot) return;
 
-    // Return, if message doesn't hold an attachement.
-    if (msg.attachments.filter(attachment => attachment.height !== null && attachment.width !== null).size < 1) return;
+    // Return, if message doesn't start with "!".
+    if (!message.content.startsWith("!")) return;
 
-    // Return, if message doesn't start with a "!decensor manual bar"
-    if (!msg.content.startsWith("!decensor")) return;
+    const args = message.content.slice("!".length).trim().split(/ +/);
+    const command = args.shift().toLowerCase();
 
-    if (msg.content.startsWith("!decensor manual bar")) {
-        await decensorRequestHandler(msg, "deepcreampy:bar");
+    // Check, if a valid command was provided.
+    if (!discordClient.commands.has(command)) {
+        message.channel.send("Please provide a valid command.");
+        return;
     }
-    else if (msg.content.startsWith("!decensor bar")) {
-        await decensorRequestHandler(msg, "hent-ai:bar");
+
+    try {
+        discordClient.commands.get(command).execute(message, args);
+    } catch (error) {
+        console.error(error);
+        message.send("There was an error trying to execute that command.");
     }
 });
