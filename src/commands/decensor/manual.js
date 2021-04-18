@@ -4,7 +4,11 @@ const path = require("path");
 
 const MainCommand = require("../../MainCommand");
 
-const command = new MainCommand(path.resolve(`${__dirname}/manual`));
-exports.name = "manual";
-exports.description = "Decensor the provided censored image with manually selected regions.";
+const name = "manual";
+const description = "Decensor the provided censored image with manually selected regions.";
+const command = new MainCommand(name, description, path.resolve(`${__dirname}/manual`));
+
+exports.name = name;
+exports.description = description;
 exports.execute = command.execute.bind(command);
+exports.help = command.help.bind(command);

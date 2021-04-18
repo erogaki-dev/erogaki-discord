@@ -36,6 +36,12 @@ discordClient.on("message", async message => {
     const args = message.content.slice("!".length).trim().split(/ +/);
     const command = args.shift().toLowerCase();
 
+    // Check, if help output was requested.
+    if (command === "help") {
+        await help(message, args);
+        return;
+    }
+
     // Check, if a valid command was provided.
     if (!discordClient.commands.has(command)) {
         message.channel.send("Please provide a valid command.");
@@ -49,3 +55,52 @@ discordClient.on("message", async message => {
         message.send("There was an error trying to execute that command.");
     }
 });
+
+/**
+ * Provides help output for the bot or calls the help of a command.
+ * @param {Discord.Message} message
+ * @param {string[]} args
+ */
+async function help(message, args) {
+    // Get the provided command.
+    const command = args.shift()?.toLowerCase();
+
+    // If no command was provided, send help output for this bot.
+    if (command === undefined) {
+        await _sendHelpOutput(message);
+        return;
+    }
+
+    // Check, if a valid command was provided.
+    // Return otherwise.
+    if (!discordClient.commands.has(command)) {
+        await message.channel.send("Please specify a valid command.");
+        return;
+    }
+
+    // Try to call the help function of the provided command.
+    try {
+        discordClient.commands.get(command).help(message, args);
+    } catch (error) {
+        console.error(error);
+        await message.channel.send("There was an error trying to get the help output of that command.");
+    }
+}
+
+/**
+ * Sends the help output for this bot.
+ * @param {Discord.Message} message
+ */
+async function _sendHelpOutput(message) {
+    let answer = [ ];
+    answer.push(`Help for erogaki-discord ${version}`);
+
+    answer.push("The following commands are availabe:");
+    for (const command of discordClient.commands) {
+        answer.push(`- ${command[0]}`);
+    }
+
+    answer.push("Just type !help <command> to receive help output for a command.");
+
+    await message.channel.send(answer);
+}

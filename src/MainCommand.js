@@ -18,13 +18,19 @@ const Discord = require("discord.js");
  */
 module.exports = exports = class MainCommand {
     /**
+     * @param {string} name - The name of this command.
+     * @param {string} description - A description of this command.
      * @param {string} subCommandPath - Path to the sub commands of this
      * command.
      * @param {ExecutionCondition[]} executionConditions - An array of
      * ExecutionConditions. Check the ExecutionCondition documentation for more
      * information.
      */
-    constructor(subCommandPath, executionConditions) {
+    constructor(name, description, subCommandPath, executionConditions) {
+        this._name = name;
+        this._description = description;
+        this._executionConditions = executionConditions;
+
         this._subCommands = new Discord.Collection();
         const commandFiles = fs.readdirSync(subCommandPath).filter(file => file.endsWith(".js"));
 
@@ -34,8 +40,6 @@ module.exports = exports = class MainCommand {
 
             this._subCommands.set(command.name, command);
         }
-
-        this._executionConditions = executionConditions;
     }
 
     /**
@@ -70,5 +74,57 @@ module.exports = exports = class MainCommand {
             console.error(error);
             await message.channel.send("There was an error trying to execute that command.");
         }
+    }
+
+    /**
+     * Provides help output for this command or calls the help of a
+     * sub-command.
+     * @param {Discord.Message} message
+     * @param {string[]} args
+     */
+    async help(message, args) {
+        // Get the provided sub-command.
+        const subCommand = args.shift()?.toLowerCase();
+
+        // If no sub-command was provided, send help output for this command.
+        if (subCommand === undefined) {
+            await this._sendHelpOutput(message);
+            return;
+        }
+
+        // Check, if a valid sub-command was provided.
+        // Return otherwise.
+        if (!this._subCommands.has(subCommand)) {
+            await message.channel.send("Please specify a valid subcommand.");
+            return;
+        }
+
+        // Try to call the help function of the provided sub-command.
+        try {
+            this._subCommands.get(subCommand).help(message, args);
+        } catch (error) {
+            console.error(error);
+            await message.channel.send("There was an error trying to get the help output of that command.");
+        }
+    }
+
+    /**
+     * Sends the help output for this command.
+     * @param {Discord.Message} message
+     */
+    async _sendHelpOutput(message) {
+        // Construct command this help is about.
+        const command = message.content.slice("!".length).trim().split(/ +/).slice(1).join(" ");
+
+        let answer = [ ];
+        answer.push(`Help for ${command}`);
+        answer.push(`${this._name}: ${this._description}`);
+
+        answer.push("The following sub-commands are available:");
+        for (const subCommand of this._subCommands) {
+            answer.push(`- ${subCommand[0]}`);
+        }
+
+        await message.channel.send(answer);
     }
 };
