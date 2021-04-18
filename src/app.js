@@ -32,7 +32,7 @@ discordClient.on("message", async msg => {
     if (msg.channel.bot) return;
 
     // Return, if message doesn't hold an attachement.
-    if (msg.attachments.filter(attachment => attachment.height !== null && attachment.width !== null) < 1) return;
+    if (msg.attachments.filter(attachment => attachment.height !== null && attachment.width !== null).size < 1) return;
 
     // Return, if message doesn't start with a "!decensor manual bar"
     if (!msg.content.startsWith("!decensor")) return;
