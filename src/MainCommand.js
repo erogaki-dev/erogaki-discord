@@ -59,7 +59,7 @@ module.exports = exports = class MainCommand {
         // valid.
         // Return, if the check fails.
         if (subCommand === undefined || !this._subCommands.has(subCommand)) {
-            message.channel.send("Please provide a valid subcommand.");
+            await message.channel.send("Please provide a valid subcommand.");
             return;
         }
 
@@ -68,7 +68,7 @@ module.exports = exports = class MainCommand {
             this._subCommands.get(subCommand).execute(message, args);
         } catch (error) {
             console.error(error);
-            message.send("There was an error trying to execute that command.");
+            await message.channel.send("There was an error trying to execute that command.");
         }
     }
 };
