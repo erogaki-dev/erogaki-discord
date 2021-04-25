@@ -4,13 +4,13 @@ const Discord = require("discord.js");
 
 const { createBackendRequest } = require("../../../backendInteraction");
 
-const name = "bar";
-const description = "Automatically decensor the provided bar-censored image.";
+const name = "mosaic";
+const description = "Automatically decensor the provided mosaic-censored image.";
 
 /**
  * @param {Discord.Message} message
  */
-async function execute(message) { await createBackendRequest(message, "mask-requests:bar", "censored-images"); }
+async function execute(message) { await createBackendRequest(message, "mask-requests:mosaic", "censored-images"); }
 
 /**
  * @param {Discord.Message} message

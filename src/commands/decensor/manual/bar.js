@@ -2,7 +2,7 @@
 
 const Discord = require("discord.js");
 
-const { decensorRequestHandler } = require("../../../backendInteraction");
+const { createBackendRequest } = require("../../../backendInteraction");
 
 const name = "bar";
 const description = "Decensor the provided bar-censored image with manually selected regions.";
@@ -10,7 +10,7 @@ const description = "Decensor the provided bar-censored image with manually sele
 /**
  * @param {Discord.Message} message
  */
-async function execute(message) { await decensorRequestHandler(message, "deepcreampy:bar"); }
+async function execute(message) { await createBackendRequest(message, "decensor-requests:bar", "masked-images"); }
 
 /**
  * @param {Discord.Message} message

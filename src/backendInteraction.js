@@ -15,10 +15,22 @@ const redisClient = new RedisPromisifiedClient({
 const redisSubscribeClient = redis.createClient(config.redisConfig);
 
 /**
- * @param {Discord.Message} msg
- * @param {string} censoredImagesKey
+ * @private
+ * @param {string} uuid
  */
-async function decensorRequestHandler(msg, censoredImagesKey) {
+async function _postBackendRequestCleanup(uuid) {
+    await redisClient.del(`censored-images:${uuid}`);
+    await redisClient.del(`masked-images:${uuid}`);
+    await redisClient.del(`decensored-images:${uuid}`);
+    await redisClient.del(`errors:${uuid}`);
+}
+
+/**
+ * @param {Discord.Message} msg
+ * @param {string} requestQueue
+ * @param {string} informationStore
+ */
+async function createBackendRequest(msg, requestQueue, informationStore) {
     console.log(`New image to decensor received from user ${msg.author.tag} in channel ${msg.channel.name} on server ${msg.guild.name}.`);
 
     // Start typing to indicate that the decensor request was received.
@@ -48,8 +60,8 @@ async function decensorRequestHandler(msg, censoredImagesKey) {
     const imageUUID = uuid.v4();
 
     // Put the image into Redis.
-    console.log(`Pushing image into censored-images:${imageUUID}.`);
-    await redisClient.set(`censored-images:${imageUUID}`, censoredImage);
+    console.log(`Pushing image into ${informationStore}:${imageUUID}.`);
+    await redisClient.set(`${informationStore}:${imageUUID}`, censoredImage);
 
     // Subscribe to keyevents, so we know when the image decensor request was processed.
     const responseChannelPromise = new Promise((resolve) => {
@@ -68,7 +80,7 @@ async function decensorRequestHandler(msg, censoredImagesKey) {
     });
 
     // Add the image uuid to the decensor request queue.
-    await redisClient.rpush(`censored-images:${censoredImagesKey}`, imageUUID);
+    await redisClient.rpush(`${requestQueue}`, imageUUID);
 
     // Await answer for decensor request.
     const responseChannel = await responseChannelPromise;
@@ -80,6 +92,10 @@ async function decensorRequestHandler(msg, censoredImagesKey) {
         const error = JSON.parse(errorJSON);
         console.error(error);
 
+        // Cleanup.
+        console.log("Cleaning up.");
+        _postBackendRequestCleanup();
+
         msg.channel.send(error.description);
         msg.channel.stopTyping();
         return;
@@ -89,9 +105,9 @@ async function decensorRequestHandler(msg, censoredImagesKey) {
     console.log("Retrieving image from Redis.");
     const decensoredImage = await redisClient.get(Buffer.from(`decensored-images:${imageUUID}`));
 
-    // Delete the decensored image.
-    console.log("Deleting image from Redis.");
-    redisClient.del(`decensored-images:${imageUUID}`);
+    // Cleanup.
+    console.log("Cleaning up.");
+    _postBackendRequestCleanup();
 
     // Send the decensored image into Discord.
     console.log("Sending the decensored image into Discord channel.");
@@ -100,4 +116,4 @@ async function decensorRequestHandler(msg, censoredImagesKey) {
     msg.channel.stopTyping();
 }
 
-exports.decensorRequestHandler = decensorRequestHandler;
+exports.createBackendRequest = createBackendRequest;
