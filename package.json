@@ -1,6 +1,6 @@
 {
   "name": "erogaki-discord",
-  "version": "0.2.2",
+  "version": "0.3.1",
   "description": "A Discord bot, which takes censored Hentai and returns a decensored version.",
   "main": "src/app.js",
   "scripts": {
