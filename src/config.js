@@ -15,6 +15,7 @@
 /**
  * @typedef {Object} Config
  * @property {RedisConfig} redisConfig
+ * @property {DiscordConfig} discordConfig
  */
 
 
