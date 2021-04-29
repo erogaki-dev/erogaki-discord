@@ -13,9 +13,17 @@
  */
 
 /**
+ * @typedef {Object} MongoDBConfig
+ * @property {string} hostname
+ * @property {string} port
+ * @property {string} db
+ */
+
+/**
  * @typedef {Object} Config
  * @property {RedisConfig} redisConfig
  * @property {DiscordConfig} discordConfig
+ * @property {MongoDBConfig} mongoDBConfig
  */
 
 
@@ -33,6 +41,11 @@ function createConfig() {
         },
         discordConfig: {
             accessToken: process.env.DISCORD_TOKEN || undefined
+        },
+        mongoDBConfig: {
+            hostname: process.env.MONGODB_HOSTNAME || "localhost",
+            port: parseInt(process.env.MONGODB_PORT) || 27017,
+            db: process.env.MONGODB_DB || "erogaki-discord"
         }
     };
 }

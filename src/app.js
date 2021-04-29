@@ -6,6 +6,7 @@ const Discord = require("discord.js");
 
 const { version } = require("../package.json");
 const config = require("./config");
+const userConfig = require("./userConfiguration/config");
 
 const discordClient = new Discord.Client();
 discordClient.commands = new Discord.Collection();
@@ -30,10 +31,13 @@ discordClient.on("message", async message => {
     // Return, if message was sent by a bot.
     if (message.author.bot) return;
 
-    // Return, if message doesn't start with "!".
-    if (!message.content.startsWith("!")) return;
+    // Get the prefix configured for the current guild.
+    const prefix = await userConfig.getPrefix(message.guild.id);
 
-    const args = message.content.slice("!".length).trim().split(/ +/);
+    // Return, if message doesn't start with the configured prefix.
+    if (!message.content.startsWith(prefix)) return;
+
+    const args = message.content.slice(prefix.length).trim().split(/ +/);
     const command = args.shift().toLowerCase();
 
     // Check, if help output was requested.
@@ -92,13 +96,16 @@ async function help(message, args) {
  * @param {Discord.Message} message
  */
 async function _sendHelpOutput(message) {
+    // Get the prefix used for the guild.
+    const prefix = await userConfig.getPrefix(message.guild.id);
+
     const answerEmbed = new Discord.MessageEmbed()
         .setTitle(`Help for erogaki-discord ${version}`)
         .setDescription("The following commands are available:")
-        .setFooter("Just type !help <command> to receive help output for a command.");
+        .setFooter(`Just type ${prefix}help <command> to receive help output for a command.`);
 
     for (const command of discordClient.commands) {
-        answerEmbed.addField(`!${command[1].name}`, command[1].description);
+        answerEmbed.addField(`${prefix}${command[1].name}`, command[1].description);
     }
 
     await message.channel.send(answerEmbed);

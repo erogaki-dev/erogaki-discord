@@ -3,6 +3,8 @@
 const fs = require("fs");
 const Discord = require("discord.js");
 
+const userConfig = require("./userConfiguration/config");
+
 /**
  * @typedef {Function} ExecutionCondition - Executed in the execute of a
  * MainCommand. Should return true, if a the execution should continue, false,
@@ -113,16 +115,19 @@ module.exports = exports = class MainCommand {
      * @param {Discord.Message} message
      */
     async _sendHelpOutput(message) {
+        // Get the prefix used for the guild.
+        const prefix = await userConfig.getPrefix(message.guild.id);
+
         // Construct command this help is about.
-        const command = message.content.slice("!".length).trim().split(/ +/).slice(1).join(" ");
+        const command = message.content.slice(prefix.length).trim().split(/ +/).slice(1).join(" ");
 
         const answerEmbed = new Discord.MessageEmbed()
-            .setTitle(`Help for !${command}`)
+            .setTitle(`Help for ${prefix}${command}`)
             .setDescription(`**${this._name}**: ${this._description}`
                             + "\n"
                             + "\nThe following sub-commands are available:")
             .setFooter("You can call sub-commands like the following:"
-                       + `\n!${command} <sub-command>`);
+                       + `\n${prefix}${command} <sub-command>`);
 
         for (const subCommand of this._subCommands) {
             answerEmbed.addField(`${subCommand[1].name}`, `${subCommand[1].description}`);

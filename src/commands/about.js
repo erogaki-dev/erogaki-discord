@@ -3,6 +3,7 @@
 const Discord = require("discord.js");
 
 const { version } = require("../../package.json");
+const userConfig = require("../userConfiguration/config");
 
 const name = "about";
 const description = "Show information about this bot.";
@@ -22,11 +23,14 @@ async function execute(message) {
  * @param {Discord.Message} message
  */
 async function help(message) {
+    // Get the prefix used for the guild.
+    const prefix = await userConfig.getPrefix(message.guild.id);
+
     // Construct command this help is about.
-    const command = message.content.slice("!".length).trim().split(/ +/).slice(1).join(" ");
+    const command = message.content.slice(prefix.length).trim().split(/ +/).slice(1).join(" ");
 
     const answerEmbed = new Discord.MessageEmbed()
-        .setTitle(`Help for !${command}`)
+        .setTitle(`Help for ${prefix}${command}`)
         .setDescription(`**${name}**: ${description}`);
 
     await message.channel.send(answerEmbed);

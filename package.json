@@ -21,6 +21,7 @@
   "homepage": "https://github.com/erogaki-dev/erogaki-discord#readme",
   "dependencies": {
     "discord.js": "^12.5.3",
+    "mongoose": "^5.12.6",
     "redis": "^3.1.1",
     "uuid": "^8.3.2"
   },
